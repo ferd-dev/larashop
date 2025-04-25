@@ -1,12 +1,153 @@
 <script setup>
-import { usePage } from "@inertiajs/vue3";
+import { ref } from "vue";
+import { usePage, router } from "@inertiajs/vue3";
 
 const products = usePage().props.products.data;
+const brands = usePage().props.brands;
+const categories = usePage().props.categories;
+
+const isAddModalOpen = ref(false);
+const dialogVisible = ref(false)
+const editMode = ref(false)
+
+const product = ref({
+    id: null,
+    title: "",
+    categoryId: "",
+    brandId: "",
+    quantity: 0,
+    description: "",
+    productImage: [],
+    inStock: false,
+    published: false,
+    price: 0,
+});
+
+const openAddModal = () => {
+    isAddModalOpen.value = true;
+    dialogVisible.value = true
+    editMode.value = false
+};
+
+const addProdcut = async () => {
+    const formData = new FormData();
+    formData.append("title", product.value.title);
+    formData.append("category_id", product.value.categoryId);
+    formData.append("brand_id", product.value.brandId);
+    formData.append("quantity", product.value.quantity);
+    formData.append("description", product.value.description);
+    formData.append("price", product.value.price);
+    formData.append("price", product.value.price);
+
+    for (const image of product.value.productImage) {
+        formData.append("product_images[]", image.row);
+    }
+
+    try {
+        await router.post("products/store", formData, {
+            onSuccess: (page) => {
+                isAddModalOpen.value = false;
+                dialogVisible.value = false
+                resetFormValues();
+
+                Swal.fire({
+                    toast: true,
+                    position: "top-end",
+                    icon: "success",
+                    showConfirmButton: false,
+                    title: page.props.flash.success,
+                    timer: 3000,
+                    timerProgressBar: true,
+                });
+            },
+        });
+    } catch (error) {
+        console.error("Error uploading images:", error);
+    }
+};
+
+const resetFormValues = () => {
+    product.value = {
+        id: null,
+        title: "",
+        categoryId: "",
+        brandId: "",
+        quantity: 0,
+        description: "",
+        productImage: [],
+        inStock: false,
+        published: false,
+        price: 0,
+    };
+};
+
+const openEditModal = (product) => {
+    editMode.value = true
+    isAddModalOpen.value = false;
+    dialogVisible.value = true
+};
 
 </script>
 
 <template>
     <section class="bg-gray-50 p-3 sm:p-5">
+
+        <el-dialog
+            v-model="dialogVisible"
+            :title="editMode ? 'Editar Producto' : 'Agregar Producto'"
+            width="50%"
+
+        >
+            <form class="px-5 mx-auto" @submit.prevent="addProdcut()">
+                <div class="relative z-0 w-full mb-5 group">
+                    <input v-model="product.title" type="text" name="floating_title" id="floating_title" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+                    <label for="floating_title" class="peer-focus:font-medium absolute text-sm text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Titulo</label>
+                </div>
+
+                <div class="grid md:grid-cols-2 md:gap-6">
+                    <div class="relative z-0 w-full mb-5 group">
+                        <input v-model="product.price" type="number" name="floating_price" id="floating_price" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+                        <label for="floating_price" class="peer-focus:font-medium absolute text-sm text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Precio</label>
+                    </div>
+                    <div class="relative z-0 w-full mb-5 group">
+                        <input v-model="product.quantity" type="number" name="floating_quantity" id="floating_quantity" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+                        <label for="floating_quantity" class="peer-focus:font-medium absolute text-sm text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Cantidad</label>
+                    </div>
+                </div>
+
+                <div class="relative z-0 w-full mb-5 group">
+                    <textarea v-model="product.description" name="floating_description" id="floating_description" rows="4" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" "></textarea>
+
+                    <label for="floating_description" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Descripcion</label>
+                </div>
+
+                <div class="relative z-0 w-full mb-5 group">
+                    <label for="floating_brand" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Maarcas</label>
+
+                    <select v-model="product.brandId" name="floating_brand" id="floating_brand"  class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer">
+                        <option selected>Seleccion una marca</option>
+                        <option v-for="brand in brands" :key="brand.id" :value="brand.id">
+                            {{ brand.name }}
+                        </option>
+                    </select>
+                </div>
+
+                <div class="relative z-0 w-full mb-5 group">
+                    <label for="floating_category" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Categorias</label>
+
+                    <select v-model="product.categoryId" name="floating_category" id="floating_category"  class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer">
+                        <option selected>Seleccion una categoria</option>
+                        <option v-for="category in categories" :key="category.id" :value="category.id">{{ category.name }}</option>
+                    </select>
+                </div>
+
+
+
+
+                <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center">Guardar</button>
+            </form>
+        </el-dialog>
+
         <div class="mx-auto max-w-screen-xl px-4 lg:px-12">
             <div class="bg-white relative shadow-md sm:rounded-lg overflow-hidden">
                 <div class="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4">
@@ -35,6 +176,7 @@ const products = usePage().props.products.data;
                         class="w-full md:w-auto flex flex-col md:flex-row space-y-2 md:space-y-0 items-stretch md:items-center justify-end md:space-x-3 flex-shrink-0"
                     >
                         <button
+                            @click="openAddModal"
                             type="button"
                             class="flex items-center justify-center text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2"
                         >
@@ -43,7 +185,7 @@ const products = usePage().props.products.data;
                                 <path clip-rule="evenodd" fill-rule="evenodd"
                                     d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" />
                             </svg>
-                            Agregar
+                            Agregar Producto
                         </button>
                         <div class="flex items-center space-x-3 w-full md:w-auto">
                             <button id="actionsDropdownButton" data-dropdown-toggle="actionsDropdown"
@@ -201,9 +343,9 @@ const products = usePage().props.products.data;
                                                 </a>
                                             </li>
                                             <li>
-                                                <a href="#" class="block py-2 px-4 hover:bg-gray-100">
+                                                <button @click="openEditModal" class="block py-2 px-4 hover:bg-gray-100">
                                                     Editar
-                                                </a>
+                                                </button>
                                             </li>
                                         </ul>
                                         <div class="py-1">
