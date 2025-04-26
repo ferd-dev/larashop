@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from "vue";
 import { usePage, router } from "@inertiajs/vue3";
+import { Plus } from '@element-plus/icons-vue'
 
 const products = usePage().props.products.data;
 const brands = usePage().props.brands;
@@ -17,13 +18,30 @@ const product = ref({
     brandId: "",
     quantity: 0,
     description: "",
-    productImage: [],
     inStock: false,
     published: false,
     price: 0,
 });
 
+const productImages = ref([]);
+const dialogImageUrl = ref("");
+const dialogImageVisible = ref(false);
+
+const handleFileChange = (file) => {
+    productImages.value.push(file);
+};
+
+const handlePictureCardPreview = (file) => {
+    dialogImageUrl.value = file.url
+    dialogImageVisible.value = true
+}
+
+const handleRemove = (file) => {
+  console.log(file)
+}
+
 const openAddModal = () => {
+    resetFormValues();
     isAddModalOpen.value = true;
     dialogVisible.value = true
     editMode.value = false
@@ -37,10 +55,9 @@ const addProdcut = async () => {
     formData.append("quantity", product.value.quantity);
     formData.append("description", product.value.description);
     formData.append("price", product.value.price);
-    formData.append("price", product.value.price);
 
-    for (const image of product.value.productImage) {
-        formData.append("product_images[]", image.row);
+    for (const image of productImages.value) {
+        formData.append("product_images[]", image.raw);
     }
 
     try {
@@ -74,11 +91,12 @@ const resetFormValues = () => {
         brandId: "",
         quantity: 0,
         description: "",
-        productImage: [],
         inStock: false,
         published: false,
         price: 0,
     };
+
+    productImages.value = [];
 };
 
 const openEditModal = (product) => {
@@ -101,12 +119,15 @@ const openEditModal = (product) => {
             <form class="px-5 mx-auto" @submit.prevent="addProdcut()">
                 <div class="relative z-0 w-full mb-5 group">
                     <input v-model="product.title" type="text" name="floating_title" id="floating_title" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+
                     <label for="floating_title" class="peer-focus:font-medium absolute text-sm text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Titulo</label>
                 </div>
 
                 <div class="grid md:grid-cols-2 md:gap-6">
                     <div class="relative z-0 w-full mb-5 group">
-                        <input v-model="product.price" type="number" name="floating_price" id="floating_price" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+                        <input v-model="product.price" type="number"
+                            step="0.01" min="0" max="9999999"
+                            name="floating_price" id="floating_price" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
                         <label for="floating_price" class="peer-focus:font-medium absolute text-sm text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Precio</label>
                     </div>
                     <div class="relative z-0 w-full mb-5 group">
@@ -125,7 +146,6 @@ const openEditModal = (product) => {
                     <label for="floating_brand" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Maarcas</label>
 
                     <select v-model="product.brandId" name="floating_brand" id="floating_brand"  class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer">
-                        <option selected>Seleccion una marca</option>
                         <option v-for="brand in brands" :key="brand.id" :value="brand.id">
                             {{ brand.name }}
                         </option>
@@ -136,9 +156,28 @@ const openEditModal = (product) => {
                     <label for="floating_category" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Categorias</label>
 
                     <select v-model="product.categoryId" name="floating_category" id="floating_category"  class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer">
-                        <option selected>Seleccion una categoria</option>
                         <option v-for="category in categories" :key="category.id" :value="category.id">{{ category.name }}</option>
                     </select>
+                </div>
+
+                <div class="grid md:gap-6">
+                    <div class="relative z-0 w-full mb-5 group">
+                        <el-upload
+                            v-model:file-list="productImages"
+                            list-type="picture-card"
+                            multiple
+                            :auto-upload="false"
+                            :on-preview="handlePictureCardPreview"
+                            :on-remove="handleRemove"
+                            :on-change="handleFileChange"
+                        >
+                            <el-icon><Plus /></el-icon>
+                        </el-upload>
+
+                        <el-dialog v-model="dialogImageVisible">
+                            <img w-full :src="dialogImageUrl" alt="Preview Image" />
+                        </el-dialog>
+                    </div>
                 </div>
 
 
