@@ -180,9 +180,6 @@ const openEditModal = (product) => {
                     </div>
                 </div>
 
-
-
-
                 <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center">Guardar</button>
             </form>
         </el-dialog>
@@ -319,6 +316,7 @@ const openEditModal = (product) => {
                     <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                         <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                             <tr>
+                                <th scope="col" class="px-4 py-3">#</th>
                                 <th scope="col" class="px-4 py-3">Nombre del Producto</th>
                                 <th scope="col" class="px-4 py-3">Categoria</th>
                                 <th scope="col" class="px-4 py-3">Marca</th>
@@ -334,26 +332,44 @@ const openEditModal = (product) => {
                         <tbody>
                             <tr v-for="product in products" :key="product.id" class="border-b">
                                 <th scope="row"
+                                    class="px-4 py-3 font-medium">
+                                    {{ product.id }}
+                                </th>
+                                <th scope="row"
                                     class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap">
                                     {{ product.title }}
                                 </th>
-                                <td class="px-4 py-3">
-                                    {{ product.category_id }}
+                                <td class="px-4 py-3 w-max">
+                                    {{ product.category.name }}
                                 </td>
-                                <td class="px-4 py-3">
-                                    {{ product.brand_id }}
+                                <td class="px-4 py-3 w-max">
+                                    {{ product.brand.name }}
                                 </td>
                                 <td class="px-4 py-3">
                                     {{ product.quantity }}
                                 </td>
                                 <td class="px-4 py-3">
-                                    {{ product.in_stock }}
+                                    <div class="w-max">
+                                        <span v-if="!product.in_stock" class="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm">
+                                            En Stock
+                                        </span>
+                                        <span v-else class="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm">
+                                            Sin Stock
+                                        </span>
+                                    </div>
                                 </td>
                                 <td class="px-4 py-3">
-                                    {{ product.published }}
+                                    <button v-if="!product.published" type="button" class="w-max px-3 py-2 text-xs font-medium text-center text-white rounded-lg  bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-blue-300 ">
+                                        Publicado
+                                    </button>
+                                    <button v-else type="button" class="w-max px-3 py-2 text-xs font-medium text-center text-white bg-red-700 rounded-lg hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 ">
+                                        No Publicado
+                                    </button>
                                 </td>
-                                <td class="px-4 py-3 lex items-center justify-end">
-                                    $ {{ product.price }}
+                                <td class="px-4 py-3 ">
+                                    <div class="w-max">
+                                        $ {{ product.price }}
+                                    </div>
                                 </td>
                                 <td class="px-4 py-3 flex items-center justify-end">
                                     <button
