@@ -21,6 +21,7 @@ const product = ref({
     inStock: false,
     published: false,
     price: 0,
+    productImages: [],
 });
 
 const productImages = ref([]);
@@ -97,12 +98,86 @@ const resetFormValues = () => {
     };
 
     productImages.value = [];
+
+    dialogImageUrl.value = "";
 };
 
-const openEditModal = (product) => {
+const openEditModal = (productValue) => {
     editMode.value = true
     isAddModalOpen.value = false;
     dialogVisible.value = true
+
+    product.value.id = productValue.id;
+    product.value.title = productValue.title;
+    product.value.categoryId = productValue.category_id;
+    product.value.brandId = productValue.brand_id;
+    product.value.quantity = productValue.quantity;
+    product.value.description = productValue.description;
+    product.value.inStock = productValue.in_stock;
+    product.value.published = productValue.published;
+    product.value.price = productValue.price;
+
+    product.value.productImages = productValue.product_images;
+
+    // productImages.value = productValue.product_images;
+};
+
+const deleteImage = async(image, index) => {
+    try {
+        await router.delete(`/admin/products/image/${image.id}`, {
+            onSuccess: (page) => {
+                product.value.productImages.splice(index, 1);
+                Swal.fire({
+                    toast: true,
+                    position: "top-end",
+                    icon: "success",
+                    showConfirmButton: false,
+                    title: page.props.flash.success,
+                    timer: 3000,
+                    timerProgressBar: true,
+                });
+            },
+        });
+    } catch (error) {
+        console.error("Error deleting image:", error);
+    }
+};
+
+const updateProduct = async () => {
+    const formData = new FormData();
+    formData.append("title", product.value.title);
+    formData.append("category_id", product.value.categoryId);
+    formData.append("brand_id", product.value.brandId);
+    formData.append("quantity", product.value.quantity);
+    formData.append("description", product.value.description);
+    formData.append("price", product.value.price);
+    formData.append("_method", "PUT");
+
+    for (const image of productImages.value) {
+        formData.append("product_images[]", image.raw);
+    }
+
+    try {
+        await router.post(`products/update/${product.value.id}`, formData, {
+            onSuccess: (page) => {
+                isAddModalOpen.value = false;
+                dialogVisible.value = false
+                resetFormValues();
+
+                Swal.fire({
+                    toast: true,
+                    position: "top-end",
+                    icon: "success",
+                    showConfirmButton: false,
+                    title: page.props.flash.success,
+                    timer: 3000,
+                    timerProgressBar: true,
+                });
+            },
+        });
+    } catch (error) {
+        console.error("Error uploading images:", error);
+    }
 };
 
 </script>
@@ -116,9 +191,9 @@ const openEditModal = (product) => {
             width="50%"
 
         >
-            <form class="px-5 mx-auto" @submit.prevent="addProdcut()">
+            <form class="px-5 mx-auto" @submit.prevent="editMode ? updateProduct() :  addProdcut()">
                 <div class="relative z-0 w-full mb-5 group">
-                    <input v-model="product.title" type="text" name="floating_title" id="floating_title" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+                    <input v-model="product.title" type="text" name="floating_title" id="floating_title" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required maxlength="100" />
 
                     <label for="floating_title" class="peer-focus:font-medium absolute text-sm text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Titulo</label>
                 </div>
@@ -137,7 +212,7 @@ const openEditModal = (product) => {
                 </div>
 
                 <div class="relative z-0 w-full mb-5 group">
-                    <textarea v-model="product.description" name="floating_description" id="floating_description" rows="4" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" "></textarea>
+                    <textarea v-model="product.description" name="floating_description" id="floating_description" rows="4" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-blue-600" placeholder=" " ></textarea>
 
                     <label for="floating_description" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Descripcion</label>
                 </div>
@@ -177,6 +252,22 @@ const openEditModal = (product) => {
                         <el-dialog v-model="dialogImageVisible">
                             <img w-full :src="dialogImageUrl" alt="Preview Image" />
                         </el-dialog>
+                    </div>
+                </div>
+
+                <div class="flex flex-nowrap mb-5 text-center aling-center">
+                    <div v-for="(image, index) in product.productImages" :key="image.id" class="relative mx-2">
+                        <img class="w-32 h-32 rounded" :src="`/storage/${image.image}`" alt="">
+                        <span
+                            class="text-red-500 rounded-full px-1 text-sm font-bold absolute top-1 left-1 transform -translate-x-1/2 -translate-y-1/2 cursor-pointer"
+                            @click="deleteImage(image, index)"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                class="size-5 transition delay-150 duration-300 hover:-translate-y-1 hover:scale-110 hover:text-red-700"
+                            >
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                            </svg>
+                        </span>
                     </div>
                 </div>
 
@@ -373,8 +464,8 @@ const openEditModal = (product) => {
                                 </td>
                                 <td class="px-4 py-3 flex items-center justify-end">
                                     <button
-                                        id="apple-imac-27-dropdown-button"
-                                        data-dropdown-toggle="apple-imac-27-dropdown"
+                                        :id="product.slug + '-dropdown-button'"
+                                        :data-dropdown-toggle="product.slug + '-dropdown'"
                                         class="inline-flex items-center p-0.5 text-sm font-medium text-center text-gray-500 hover:text-gray-800 rounded-lg focus:outline-none"
                                         type="button"
                                     >
@@ -385,12 +476,12 @@ const openEditModal = (product) => {
                                         </svg>
                                     </button>
                                     <div
-                                        id="apple-imac-27-dropdown"
+                                        :id="product.slug + '-dropdown'"
                                         class="hidden z-10 w-44 bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600"
                                     >
                                         <ul
                                             class="py-1 text-sm text-gray-700 dark:text-gray-200"
-                                            aria-labelledby="apple-imac-27-dropdown-button"
+                                            :aria-labelledby="product.slug + '-dropdown-button'"
                                         >
                                             <li>
                                                 <a href="#" class="block py-2 px-4 hover:bg-gray-100">
@@ -398,7 +489,7 @@ const openEditModal = (product) => {
                                                 </a>
                                             </li>
                                             <li>
-                                                <button @click="openEditModal" class="block py-2 px-4 hover:bg-gray-100">
+                                                <button @click="openEditModal(product)" class="block py-2 px-4 hover:bg-gray-100">
                                                     Editar
                                                 </button>
                                             </li>
