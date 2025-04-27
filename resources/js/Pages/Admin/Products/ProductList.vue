@@ -3,7 +3,11 @@ import { ref } from "vue";
 import { usePage, router } from "@inertiajs/vue3";
 import { Plus } from '@element-plus/icons-vue'
 
-const products = usePage().props.products.data;
+defineProps({
+    products: Array
+})
+
+// const products = usePage().props.products.data;
 const brands = usePage().props.brands;
 const categories = usePage().props.categories;
 
@@ -178,6 +182,42 @@ const updateProduct = async () => {
     } catch (error) {
         console.error("Error uploading images:", error);
     }
+};
+
+const deleteProduct = async (product, index) => {
+    Swal.fire({
+        title: "Estás seguro?",
+        text: "No podrás revertir esto!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Si, eliminar!",
+        cancelButtonText: "Cancelar",
+    }).then( async (result) => {
+        if (result.isConfirmed) {
+            try {
+                await router.delete(`products/destroy/${product.id}`, {
+                    onSuccess: (page) => {
+                        // this.deleteImage(product, index);
+                        // products.value.splice(index, 1);
+                        Swal.fire({
+                            toast: true,
+                            position: "top-end",
+                            icon: "success",
+                            showConfirmButton: false,
+                            title: page.props.flash.success,
+                            timer: 3000,
+                            timerProgressBar: true,
+                        });
+                    },
+                });
+            } catch (error) {
+                console.error("Error deleting product:", error);
+            }
+        }
+    })
+
 };
 
 </script>
@@ -495,7 +535,7 @@ const updateProduct = async () => {
                                             </li>
                                         </ul>
                                         <div class="py-1">
-                                            <a href="#" class="block py-2 px-4 text-sm text-red-500 hover:bg-gray-100">
+                                            <a href="#" @click="deleteProduct(product, index)" class="block py-2 px-4 text-sm text-red-500 hover:bg-gray-100">
                                                 Delete
                                             </a>
                                         </div>

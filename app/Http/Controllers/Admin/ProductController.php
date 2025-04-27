@@ -15,7 +15,7 @@ class ProductController extends Controller
 {
     public function index()
     {
-        $products = Product::with('category', 'brand', 'product_images')->paginate(10);
+        $products = Product::with('category', 'brand', 'product_images')->get();
         $brands = Brand::all();
         $categories = Category::all();
 
@@ -85,5 +85,12 @@ class ProductController extends Controller
     {
         ProductImage::where('id', $id)->delete();
         return redirect()->route('admin.products.index')->with('success', 'Imagen product deleted successfully.');
+    }
+
+    public function destroy($id)
+    {
+        Product::findOrFail($id)->delete();
+
+        return redirect()->route('admin.products.index')->with('success', 'Product deleted successfully.');
     }
 }
