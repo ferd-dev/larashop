@@ -1,7 +1,8 @@
 <script setup>
 import { ref } from "vue";
 import { usePage, router } from "@inertiajs/vue3";
-import { Plus } from '@element-plus/icons-vue'
+import { Plus, EditPen, Delete } from '@element-plus/icons-vue'
+import ProductTable from './ProductTable.vue';
 
 defineProps({
     products: Array
@@ -219,11 +220,11 @@ const deleteProduct = async (product, index) => {
     })
 
 };
-
 </script>
 
 <template>
     <section class="bg-gray-50 p-3 sm:p-5">
+
 
         <el-dialog
             v-model="dialogVisible"
@@ -355,32 +356,6 @@ const deleteProduct = async (product, index) => {
                             Agregar Producto
                         </button>
                         <div class="flex items-center space-x-3 w-full md:w-auto">
-                            <button id="actionsDropdownButton" data-dropdown-toggle="actionsDropdown"
-                                class="w-full md:w-auto flex items-center justify-center py-2 px-4 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
-                                type="button">
-                                <svg class="-ml-1 mr-1.5 w-5 h-5" fill="currentColor" viewbox="0 0 20 20"
-                                    xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                    <path clip-rule="evenodd" fill-rule="evenodd"
-                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                                </svg>
-                                Actions
-                            </button>
-                            <div id="actionsDropdown"
-                                class="hidden z-10 w-44 bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600">
-                                <ul class="py-1 text-sm text-gray-700 dark:text-gray-200"
-                                    aria-labelledby="actionsDropdownButton">
-                                    <li>
-                                        <a href="#"
-                                            class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Mass
-                                            Edit</a>
-                                    </li>
-                                </ul>
-                                <div class="py-1">
-                                    <a href="#"
-                                        class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Delete
-                                        all</a>
-                                </div>
-                            </div>
                             <button id="filterDropdownButton" data-dropdown-toggle="filterDropdown"
                                 class="w-full md:w-auto flex items-center justify-center py-2 px-4 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
                                 type="button">
@@ -444,106 +419,11 @@ const deleteProduct = async (product, index) => {
                     </div>
                 </div>
                 <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                            <tr>
-                                <th scope="col" class="px-4 py-3">#</th>
-                                <th scope="col" class="px-4 py-3">Nombre del Producto</th>
-                                <th scope="col" class="px-4 py-3">Categoria</th>
-                                <th scope="col" class="px-4 py-3">Marca</th>
-                                <th scope="col" class="px-4 py-3">Cantidad</th>
-                                <th scope="col" class="px-4 py-3">Stock</th>
-                                <th scope="col" class="px-4 py-3">Publicado</th>
-                                <th scope="col" class="px-4 py-3">Precio</th>
-                                <th scope="col" class="px-4 py-3">
-                                    <span class="">Acciones</span>
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="product in products" :key="product.id" class="border-b">
-                                <th scope="row"
-                                    class="px-4 py-3 font-medium">
-                                    {{ product.id }}
-                                </th>
-                                <th scope="row"
-                                    class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap">
-                                    {{ product.title }}
-                                </th>
-                                <td class="px-4 py-3 w-max">
-                                    {{ product.category.name }}
-                                </td>
-                                <td class="px-4 py-3 w-max">
-                                    {{ product.brand.name }}
-                                </td>
-                                <td class="px-4 py-3">
-                                    {{ product.quantity }}
-                                </td>
-                                <td class="px-4 py-3">
-                                    <div class="w-max">
-                                        <span v-if="!product.in_stock" class="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm">
-                                            En Stock
-                                        </span>
-                                        <span v-else class="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm">
-                                            Sin Stock
-                                        </span>
-                                    </div>
-                                </td>
-                                <td class="px-4 py-3">
-                                    <button v-if="!product.published" type="button" class="w-max px-3 py-2 text-xs font-medium text-center text-white rounded-lg  bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-blue-300 ">
-                                        Publicado
-                                    </button>
-                                    <button v-else type="button" class="w-max px-3 py-2 text-xs font-medium text-center text-white bg-red-700 rounded-lg hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 ">
-                                        No Publicado
-                                    </button>
-                                </td>
-                                <td class="px-4 py-3 ">
-                                    <div class="w-max">
-                                        $ {{ product.price }}
-                                    </div>
-                                </td>
-                                <td class="px-4 py-3 flex items-center justify-end">
-                                    <button
-                                        :id="product.slug + '-dropdown-button'"
-                                        :data-dropdown-toggle="product.slug + '-dropdown'"
-                                        class="inline-flex items-center p-0.5 text-sm font-medium text-center text-gray-500 hover:text-gray-800 rounded-lg focus:outline-none"
-                                        type="button"
-                                    >
-                                        <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewbox="0 0 20 20"
-                                            xmlns="http://www.w3.org/2000/svg">
-                                            <path
-                                                d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z" />
-                                        </svg>
-                                    </button>
-                                    <div
-                                        :id="product.slug + '-dropdown'"
-                                        class="hidden z-10 w-44 bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600"
-                                    >
-                                        <ul
-                                            class="py-1 text-sm text-gray-700 dark:text-gray-200"
-                                            :aria-labelledby="product.slug + '-dropdown-button'"
-                                        >
-                                            <li>
-                                                <a href="#" class="block py-2 px-4 hover:bg-gray-100">
-                                                    Ver
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <button @click="openEditModal(product)" class="block py-2 px-4 hover:bg-gray-100">
-                                                    Editar
-                                                </button>
-                                            </li>
-                                        </ul>
-                                        <div class="py-1">
-                                            <a href="#" @click="deleteProduct(product, index)" class="block py-2 px-4 text-sm text-red-500 hover:bg-gray-100">
-                                                Delete
-                                            </a>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <ProductTable
+                        :products="products"
+                        @edit-product="openEditModal"
+                        @delete-product="deleteProduct"
+                    />
                 </div>
                 <nav class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 p-4"
                     aria-label="Table navigation">
