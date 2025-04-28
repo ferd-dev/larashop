@@ -8,7 +8,7 @@ defineProps({
 </script>
 
 <template>
-    <tr class="border-b">
+    <tr class="border-b hover:bg-gray-50">
         <th scope="row" class="px-4 py-3 font-medium">
             {{ index }}
         </th>

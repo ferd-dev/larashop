@@ -271,7 +271,7 @@ const handleCategoryFilter = (categoryId) => {
             v-model="dialogVisible"
             :title="editMode ? 'Editar Producto' : 'Agregar Producto'"
             width="50%"
-
+            align-center
         >
             <form class="px-5 mx-auto" @submit.prevent="editMode ? updateProduct() :  addProdcut()">
                 <div class="relative z-0 w-full mb-5 group">
