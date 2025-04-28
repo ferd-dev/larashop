@@ -16,10 +16,14 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search');
+        $category = $request->input('category');
 
         $products = Product::with('category', 'brand', 'product_images')
             ->when($search, function ($query, $search) {
                 $query->where('title', 'like', '%' . $search . '%');
+            })
+            ->when($category, function ($query, $category) {
+                $query->where('category_id', $category); // Filtrar por categoría
             })
             ->paginate(10)
             ->withQueryString();
