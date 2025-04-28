@@ -17,13 +17,11 @@ class ProductController extends Controller
     {
         $search = $request->input('search');
 
-        // $products = Product::with('category', 'brand', 'product_images')->paginate(3);
-
         $products = Product::with('category', 'brand', 'product_images')
             ->when($search, function ($query, $search) {
                 $query->where('title', 'like', '%' . $search . '%');
             })
-            ->paginate(3)
+            ->paginate(10)
             ->withQueryString();
         $brands = Brand::all();
         $categories = Category::all();
