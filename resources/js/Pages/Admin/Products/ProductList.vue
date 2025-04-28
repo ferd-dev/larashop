@@ -231,6 +231,28 @@ const handleSearch = (value) => {
     router.get(route("admin.products.index"), { search: searchQuery.value }, { preserveState: true });
 };
 
+const publishItProduct = async (product) => {
+    const formData = new FormData();
+    formData.append("_method", "PUT");
+    try {
+        await router.put(`products/publishit/${product.id}`, formData, {
+            onSuccess: (page) => {
+                Swal.fire({
+                    toast: true,
+                    position: "top-end",
+                    icon: "success",
+                    showConfirmButton: false,
+                    title: page.props.flash.success,
+                    timer: 3000,
+                    timerProgressBar: true,
+                });
+            },
+        });
+    } catch (error) {
+        console.error("Error publishing product:", error);
+    }
+};
+
 
 </script>
 
@@ -417,6 +439,7 @@ const handleSearch = (value) => {
                         :products="products.data"
                         @edit-product="openEditModal"
                         @delete-product="deleteProduct"
+                        @publishit-product="publishItProduct"
                     />
                 </div>
 

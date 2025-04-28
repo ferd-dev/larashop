@@ -23,6 +23,7 @@
                 :index="products.indexOf(product) + 1"
                 @edit="emitEdit"
                 @delete="emitDelete"
+                @publishit="emitPublishIt"
             />
         </tbody>
     </table>
@@ -35,7 +36,7 @@ defineProps({
     products: Array
 });
 
-const emit = defineEmits(['edit-product', 'delete-product']);
+const emit = defineEmits(['edit-product', 'delete-product', 'publishit-product']);
 
 const emitEdit = (product) => {
     emit('edit-product', product);
@@ -43,5 +44,9 @@ const emitEdit = (product) => {
 
 const emitDelete = (product) => {
     emit('delete-product', product);
+};
+
+const emitPublishIt = (product) => {
+    emit('publishit-product', product);
 };
 </script>

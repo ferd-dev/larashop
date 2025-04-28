@@ -100,4 +100,12 @@ class ProductController extends Controller
 
         return redirect()->route('admin.products.index')->with('success', 'Product deleted successfully.');
     }
+
+    public function publishIt(Product $product)
+    {
+        $product->published = !$product->published;
+        $product->save();
+
+        return redirect()->route('admin.products.index')->with('success', 'Product published status updated successfully.');
+    }
 }
